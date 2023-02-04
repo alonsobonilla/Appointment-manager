@@ -18,12 +18,15 @@ class Citas {
         this.citas = [...this.citas, cita];
         console.log(this.citas);
     }
+    eliminarCita(id) {
+        this.citas = this.citas.filter( cita => cita.id !== id);
+    }
 }
 
 class Ui {
     imprimirAlerta(mensaje, tipo) {
         const divMensaje = document.createElement('DIV');
-        divMensaje.classList.add('text-center','alert','d-block','col-12');
+        divMensaje.classList.add('text-center','alert','d-block','col-12','mensaje-alerta');
         if(tipo) {
             divMensaje.classList.add('alert-danger');
         } else {
@@ -33,13 +36,16 @@ class Ui {
         //Mensaje de la alerta
         divMensaje.textContent = mensaje;
         //Agregamos al DOM
-        document.querySelector('#contenido').insertBefore(divMensaje, document.querySelector('.agregar-cita'));
+        if(!document.querySelector('.mensaje-alerta')) {
+            document.querySelector('#contenido').insertBefore(divMensaje, document.querySelector('.agregar-cita'));
+        }
         //Borramos la alerta despues de un tiempo
         setTimeout(() => {
             divMensaje.remove();
         }, 5000);
     }
     imprimirCitas({citas}) {
+        limpiarHtml();
         citas.forEach( cita => {
             const {mascota, propietario, telefono, fecha, hora, sintomas, id} = cita;
 
@@ -59,6 +65,8 @@ class Ui {
             const sintomasParrafo = scripting('p');
             sintomasParrafo.innerHTML = `<span clas="font-weight-bolder">Sintomas: </span> ${sintomas}`;
 
+            const btnEliminar = scripting('button', ['btn','btn-danger','mr-2'],'Eliminar');
+            btnEliminar.onclick = () => eliminarCita(id);
             //Agregar los parragos al div cita
             divCita.appendChild(mascotaParrafo);
             divCita.appendChild(propietarioParrafo);
@@ -66,6 +74,7 @@ class Ui {
             divCita.appendChild(fechaParrafo);
             divCita.appendChild(horaParrafo);
             divCita.appendChild(sintomasParrafo);
+            divCita.appendChild(btnEliminar);
 
 
             //Agregar las cita al DOM
@@ -153,4 +162,13 @@ function limpiarHtml() {
     while(contenedorCitas.firstChild) {
         contenedorCitas.removeChild(contenedorCitas.firstChild);
     }
+}
+
+function eliminarCita(id) {
+    //Eliminar la cita
+    administrarCitas.eliminarCita(id);
+    //Muestre el mensaje
+    ui.imprimirAlerta('La cita se eliminó correctamente');
+    //Reset DOM
+    ui.imprimirCitas(administrarCitas);
 }
