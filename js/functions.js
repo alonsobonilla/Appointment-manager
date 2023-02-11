@@ -48,10 +48,11 @@ export function nuevaCita(e) {
         transaction.oncomplete = function() {
             //Alerta
             ui.imprimirAlerta('Editado correctamente');
+            formulario.querySelector('button[type="submit"]').textContent = 'Crear cita';
+            //Cerramos el modo edición
+            editando = false;
         }
-        formulario.querySelector('button[type="submit"]').textContent = 'Crear cita';
-        //Cerramos el modo edición
-        editando = false;
+        
     } else {
         //Generar un id unico
         citaObj.id = Date.now();
@@ -64,9 +65,7 @@ export function nuevaCita(e) {
             //Alerta
             ui.imprimirAlerta('Se agregó correctamente');
         }
-        
     }
-    
     //Reiniciar el formulario
     formulario.reset();
     //Reiniciamo el obj
@@ -125,10 +124,13 @@ export function limpiarHtml() {
 }
 
 export function eliminarCita(id) {
-    const objectStore = DB.transaction(['citas'], 'readwrite').objectStore('citas');
+    const transaction = DB.transaction(['citas'], 'readwrite');
+    const objectStore = transaction.objectStore('citas');
     objectStore.delete(id);
-    //Muestre el mensaje
-    ui.imprimirAlerta('La cita se eliminó correctamente');
-    //Reset DOM
-    ui.imprimirCitas();
+    transaction.oncomplete = function() {
+        //Muestre el mensaje
+        ui.imprimirAlerta('La cita se eliminó correctamente');
+        //Reset DOM
+        ui.imprimirCitas();
+    }
 }
