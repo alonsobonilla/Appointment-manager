@@ -1,9 +1,8 @@
 //Imports
-import { Citas } from './classes/Citas.js';
 import { Ui } from './classes/Ui.js';
 import { mascotaInput, propietarioInput, telefonoInput, fechaInput, horaInput, sintomasInput, formulario, contenedorCitas} from './selectors.js';
+import { DB } from './app.js';
 const ui = new Ui();
-const administrarCitas = new Citas();
 
 let editando;
 //Objeto con la información de la cita
@@ -42,19 +41,30 @@ export function nuevaCita(e) {
     }
 
     if(editando) {
-        //Pasar el objeto de la cita a edición
-        administrarCitas.editarCita({...citaObj});
-        ui.imprimirAlerta('Editado correctamente');
+        //Actualizar registro en IndexedDB
+        const transaction = DB.transaction(['citas'], 'readwrite');
+        const objectStore = transaction.objectStore('citas');
+        objectStore.put(citaObj);
+        transaction.oncomplete = function() {
+            //Alerta
+            ui.imprimirAlerta('Editado correctamente');
+        }
         formulario.querySelector('button[type="submit"]').textContent = 'Crear cita';
         //Cerramos el modo edición
         editando = false;
     } else {
         //Generar un id unico
         citaObj.id = Date.now();
-        //Crear una nueva cita
-        administrarCitas.agregarCitas({...citaObj});
-        //Alerta
-        ui.imprimirAlerta('Se agregó correctamente');
+        //Insertar registro en indexedDB
+        const transaction = DB.transaction(['citas'], 'readwrite');
+        const objectStore = transaction.objectStore('citas');
+        //Insertar en la BD
+        objectStore.add(citaObj);
+        transaction.oncomplete = function() {
+            //Alerta
+            ui.imprimirAlerta('Se agregó correctamente');
+        }
+        
     }
     
     //Reiniciar el formulario
@@ -62,7 +72,7 @@ export function nuevaCita(e) {
     //Reiniciamo el obj
     reiniciarObj();
     //Mostrar el html de las citas
-    ui.imprimirCitas(administrarCitas);
+    ui.imprimirCitas();
 }
 
 
@@ -91,9 +101,7 @@ export function editarCita(cita) {
     //Deshabilitar la opción de eliminar
     const citas = document.querySelectorAll('div.cita');
     citas.forEach( c => {
-        if(Number(c.dataset.id) === id) {
-            c.querySelector('.btn-danger').disabled = true;
-        }
+        c.querySelector('.btn-danger').disabled = true;
     })
     editando = true;
 }
@@ -117,10 +125,10 @@ export function limpiarHtml() {
 }
 
 export function eliminarCita(id) {
-    //Eliminar la cita
-    administrarCitas.eliminarCita(id);
+    const objectStore = DB.transaction(['citas'], 'readwrite').objectStore('citas');
+    objectStore.delete(id);
     //Muestre el mensaje
     ui.imprimirAlerta('La cita se eliminó correctamente');
     //Reset DOM
-    ui.imprimirCitas(administrarCitas);
+    ui.imprimirCitas();
 }
