@@ -1,7 +1,7 @@
 //Imports
 import { Ui } from './classes/Ui.js';
 import { mascotaInput, propietarioInput, telefonoInput, fechaInput, horaInput, sintomasInput, formulario, contenedorCitas} from './selectors.js';
-import { DB } from './app.js';
+import { DB } from './apv.js';
 const ui = new Ui();
 
 let editando;

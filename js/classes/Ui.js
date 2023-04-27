@@ -1,6 +1,6 @@
 import { limpiarHtml, scripting, eliminarCita, editarCita} from "../functions.js";
 import { contenedorCitas } from "../selectors.js";
-import { DB } from "../app.js";
+import { DB } from "../apv.js";
 export class Ui {
     imprimirAlerta(mensaje, tipo) {
         const divMensaje = document.createElement('DIV');
